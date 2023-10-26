@@ -13,13 +13,13 @@ Before you begin, ensure that you have the following set up:
 
 1. Start by visiting the [Firebase console](https://console.firebase.google.com/) and creating a new project.
 
-2. Set a project name and disable google analytics.
+2. Set a project name and disable Google Analytics.
 
 3. Once your project is created, click on "Authentication" from the left-hand menu.
 
-4. In the Authentication section, select "Sign-in method" and enable GitHub.
+4. Select "Sign-in method" in the Authentication section and enable GitHub.
 
-5. Configure GitHub OAuth by providing your GitHub app's Client ID and Client Secret. A Github Oauth app can be created in the [Developer Settings](https://github.com/settings/developers). To create a GitHub app, you'll need a homepage URL and a callback URL. The callback URL is `https://{projectname}.firebaseapp.com/__/auth/handler`. For the homepage URL, you can use your own domain or `https://{projectname}.web.app`. Finally press "Register application" to finish creating your app.
+5. Configure GitHub OAuth by providing your GitHub app's Client ID and Client Secret. A Github Oauth app can be created in the [Developer Settings](https://github.com/settings/developers). To create a GitHub app, you'll need a homepage URL and a callback URL. The callback URL is `https://{projectname}.firebaseapp.com/__/auth/handler`. For the homepage URL, you can use your own domain or `https://{projectname}.web.app`. Finally, press "Register application" to finish creating your app.
 
 6. *(Optional)* Under the "Settings" tab, navigate to "Authorized Domains." Here, you have the option to add any custom domains from which you will be accessing the site. This step is useful if you intend to use a custom domain rather than the default Firebase Hosting domain.
 
@@ -27,10 +27,10 @@ Before you begin, ensure that you have the following set up:
 
 1. In the Firebase console, click on "Firestore" from the left-hand menu.
 
-2. Click "Create database" and use the default mode, in the next step we will be updating it for our usecase.
+2. Click "Create database" and use the default mode, in the next step we will be updating it for our use case.
 
 3. Next we will set the database in read-only mode by going to the "Rules" tab and setting the rules to the following
-```json
+```
 rules_version = '2';
 
 service cloud.firestore {
@@ -42,7 +42,7 @@ service cloud.firestore {
 }
 ```
 
-4. In the Firebase database, create a document in the following path: "config/github." The field name should be `clientId`, and the value should be the GitHub app Client ID.
+4. In the Firebase database, create a document in the following path: "config/github" The field name should be `clientId`, and the value should be the GitHub app Client ID.
 
 ## Part 3: Build The Web Application
 
@@ -50,8 +50,8 @@ service cloud.firestore {
 
 2. In the [Firebase console](https://console.firebase.google.com/), click on the gear icon in the top right, then open the "Project settings"
 
-3. Under "General", scroll down to "Your apps" and create an web app by pressing the </> icon.
-5. You will be prompted to nickname your app. You will also see the option to also setup firebase hosting. Keep this option unchecked. We will be doing this seperatly in part 4.
+3. Under "General", scroll down to "Your apps" and create a web app by pressing the </> icon.
+5. You will be prompted to nickname your app. You will also see the option to also set up Firebase hosting. Keep this option unchecked. We will be doing this separately in part 4.
 
 4. After registering the app, you will receive a piece of code containing a `firebaseConfig` variable. Replace the `firebaseConfig` in the `src/routes/+page.svelte` file.
 
@@ -65,10 +65,10 @@ service cloud.firestore {
 `firebase login`
 3. In your project folder, initialize Firebase Hosting
 `firebase init hosting`
-4. When asked to setup a project, select the "Use an existing project" option. After which, select your project from the list.
-5. Then configure the public directory, in this case you should set it to "build".
+4. When asked to set up a project, select the "Use an existing project" option. After which, select your project from the list.
+5. Then configure the public directory, in this case, you should set it to "build".
 6. next enter that you **do not** want to configure your website as a single-page app.
-7. Next you will be prompted to setup automatic builds. I would recommend to set this up. If so, follow the instructions provided by the console.
+7. Next you will be prompted to set up automatic builds. I think it would be best to set this up. If so, follow the instructions provided by the console.
 8. After the setup is finished, run `npm run build`
 9. Finally, deploy your web app to Firebase Hosting by running
 `firebase deploy`
