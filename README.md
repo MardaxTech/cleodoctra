@@ -19,7 +19,7 @@ Before you begin, ensure that you have the following set up:
 
 4. Select "Sign-in method" in the Authentication section and enable GitHub.
 
-5. Configure GitHub OAuth by providing your GitHub app's Client ID and Client Secret. A Github Oauth app can be created in the [Developer Settings](https://github.com/settings/developers). To create a GitHub app, you'll need a homepage URL and a callback URL. The callback URL is `https://{projectname}.firebaseapp.com/__/auth/handler`. For the homepage URL, you can use your own domain or `https://{projectname}.web.app`. Finally, press "Register application" to finish creating your app.
+5. Configure GitHub OAuth by providing your GitHub app's Client ID and Client Secret. A Github Oauth app can be created in the [Developer settings](https://github.com/settings/developers). To create a GitHub app, you'll need a homepage URL and a callback URL. The callback URL is `https://{projectname}.firebaseapp.com/__/auth/handler`. For the homepage URL, you can use your own domain or `https://{projectname}.web.app`. Finally, press "Register application" to finish creating your app.
 
 6. *(Optional)* Under the "Settings" tab, navigate to "Authorized Domains." Here, you have the option to add any custom domains from which you will be accessing the site. This step is useful if you intend to use a custom domain rather than the default Firebase Hosting domain.
 
