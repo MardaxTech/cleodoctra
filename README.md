@@ -67,12 +67,12 @@ service cloud.firestore {
 `firebase init hosting`
 4. When asked to set up a project, select the "Use an existing project" option. After which, select your project from the list.
 5. Then configure the public directory, in this case, you should set it to "build".
-6. next enter that you **do not** want to configure your website as a single-page app.
-7. Next you will be prompted to set up automatic builds. I think it would be best to set this up. If so, follow the instructions provided by the console.
+6. Next enter that you **do not** want to configure your website as a single-page app.
+7. Next you will be prompted to set up automatic builds. It would be best if you to set this up. This will automatically deploy the application to Firebase Hosting when an update is pushed to the Github repository. Proceed to follow the instructions provided by the console.
 8. After the setup is finished, run `npm run build`
-9. Finally, deploy your web app to Firebase Hosting by running
-`firebase deploy`
-10. You did it! Your app is now online at a URL like `https://{projectname}.web.app`
+9. Finally, deploy your web app to Firebase Hosting by either running
+`firebase deploy` or deploying it to a Github repository is you setup automatic builds in step 7. 
+10. You did it! Your app is now online at `https://{projectname}.web.app` and your custom domains when setup. 
 
 ### To use a custom domain, follow these additional steps:
 1. Return to the [Firebase console](https://console.firebase.google.com/). Navigate to the "Hosting" menu and scroll down to "Domains"
