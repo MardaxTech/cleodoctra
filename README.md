@@ -8,7 +8,7 @@ Before you begin, ensure that you have the following set up:
 
 - [Firebase account](https://console.firebase.google.com/)
 - [GitHub account](https://github.com/)
-- Make sure you are running a up to date version of nodeJS (this repo is build on v18)
+- Make sure you are running an up to date version of nodeJS (this repo is build on v18)
 
 ## Part 1: Set Up Firebase Project
 
