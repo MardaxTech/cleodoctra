@@ -119,7 +119,7 @@
 			document.head.appendChild(style);
 		}
 	};
-	
+
 	const loadJS = data => {
 		if (data) {
 			const script = document.createElement('script');
@@ -127,7 +127,7 @@
 			document.body.appendChild(script);
 		}
 	};
-	
+
 	const fetchPassthru = async resource => {
 		const resourceComponents = resource.split('/');
 		if (resource.includes('github')) {
@@ -153,7 +153,7 @@
 			location.href = `${location.origin}`;
 		}
 	};
-	
+
 	if (url && !url.includes(location.hostname)) {
 		fetchPassthru(url).then(loadHTML).catch(error => {
 			console.error(error);
@@ -161,6 +161,6 @@
 			previewForm.innerText = error;
 		});
 	} else {
-		previewForm.style.display = 'block';
+		if (previewForm) previewForm.style.display = 'block';
 	}
 })();
