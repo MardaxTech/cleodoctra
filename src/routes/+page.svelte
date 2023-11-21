@@ -29,7 +29,8 @@
 
 	let documentationBranches = ["gh-pages"] // branches that should be included in the list of documentation pages
 
-	let organisations: Set<string> = new Set(); // Organisations that the app has access to
+	let projectLocations: Set<string> = new Set(); // Organisations that the app has access to
+	let projectLocationsFound: Set<string> = new Set(); // Organisations that the app has access to
 	let userInfo: null | User = null; // User info from firebase auth
 	let currentRemoteFileUrl: string | null = null; // The url of the remote file to preview
 	let githubAccessToken: string | null = null; // The github access token
@@ -56,7 +57,6 @@
 			localStorage.setItem('accessToken', githubAccessToken);
 			localStorage.setItem('user', JSON.stringify(userInfo));
 			localStorage.setItem('expiresIn', Date.now() + 8600000 + '');
-			loadRepos();
 		}
 	}
 
@@ -73,7 +73,15 @@
 			});
 
 			// list of repositories that the app has access to
-			const repositoriesData = await repositoriesResponse.json();
+			let repositoriesData = await repositoriesResponse.json();
+
+			// filter out repos where repository.owner.login is not in organisations
+			repositoriesData = repositoriesData.filter((repository: any) => projectLocations.has(repository.owner.login));
+
+			if (repositoriesData.length == 0) {
+				reposFullyScanned = true;
+				toggleSettings(true);
+			}
 
 			for (let i = 0; i < repositoriesData.length; i++) {
 				const repository = repositoriesData[i];
@@ -107,9 +115,9 @@
 									const index = indexes[i];
 									const path = index.path;
 
-									organisations.add(repository.owner.login); // add the organisation to the list of organisations that the app has access to
+									projectLocationsFound.add(repository.owner.login); // add the organisation to the list of organisations that the app has access to
 
-									organisations = new Set([...organisations].sort()); // sort the organisations alphabetically
+									projectLocationsFound = new Set([...projectLocations].sort()); // sort the organisations alphabetically
 
 									// add the repository to the list of repositories that contain documentation
 									repositories[repository.id + branch.name + path] = {
@@ -151,7 +159,7 @@
 		githubAccessToken = localStorage.getItem('accessToken') ?? '';
 
 		// Load the repositories if the user is already signed in
-		if (userInfo && githubAccessToken) loadRepos();
+		// if (userInfo && githubAccessToken) loadRepos();
 
 		if ($page.data.reCaptchaSiteKey) {
 			initializeAppCheck(app, {
@@ -171,14 +179,19 @@
                     if (doc.exists()) {
                         const data = doc.data();
                         branches = data.branches
-						documentationBranches = branches
+						projectLocations = new Set(data.locations)
                     } else {
                         setDoc(docRef, {
                             branches: branches.length > 0 ? branches : ["gh-pages"]
                         });
+
+						branches = ["gh-pages"];
                     }
+
+					documentationBranches = branches;
+
+					loadRepos();
                 })
-				loadRepos();
 			}
 		});
 
@@ -243,11 +256,50 @@
 		const uid = userInfo!.uid;
 		const docRef = doc(db, "users", uid);
 		setDoc(docRef, {
-			branches: branches
+			branches: branches,
+			locations: [...projectLocations]
 		});
 	}
 
-	let branchInput = ""
+	let branchInput = "";
+	let locationInput = "";
+
+	function addLocation() {
+		if (locationInput == "") {
+			alert("Please enter a location")
+			return
+		}
+
+		projectLocations.add(locationInput)
+		projectLocations = new Set([...projectLocations].sort());
+		locationInput = ""
+
+		reposFullyScanned = false;
+
+		updateFirestore()
+		loadRepos()
+	}
+
+	function deleteLocation(index: number) {
+		projectLocations.delete([...projectLocations][index])
+		projectLocations = new Set([...projectLocations].sort());
+		reposFullyScanned = false;
+
+		reposFullyScanned = false;
+		repositories = {};
+
+		updateFirestore()
+		if (projectLocations.size > 0) loadRepos()
+		else {
+			reposFullyScanned = true;
+			toggleSettings(true);
+		}
+	}
+
+	function toggleSettings(state: boolean | null = null) {
+		settingsOpen = state ?? !settingsOpen;
+		documentationBranches = branches
+	}
 
 </script>
 
@@ -270,11 +322,14 @@
 					<img src="/signout.png" alt="Github Logo" />
 				</button>
 			</div>
+			{#if (projectLocations.size == 0 && reposFullyScanned)}
+				<p class="warn">⚠️The list of locations the application will search for documentation is empty</p>
+			{/if}
 			<p id="accessText">
-				This application has access to the following accounts:{' '} <br>
-				{#each organisations.values() as org, i}
-					{#if i != 0 && i != organisations.size - 1},{' '}{/if}
-					{#if i == organisations.size - 1 && organisations.size > 1}and{' '}{/if}
+				This application is looking for documentation in the following accounts:{' '} <br>
+				{#each projectLocationsFound.values() as org, i}
+					{#if i != 0 && i != projectLocationsFound.size - 1},{' '}{/if}
+					{#if i == projectLocationsFound.size - 1 && projectLocationsFound.size > 1}and{' '}{/if}
 					{org}
 				{/each}
 			</p>
@@ -283,10 +338,7 @@
 				<button id="settingsButton" on:click={() => {
 					goto(`https://github.com/settings/connections/applications/${clientId}`)
 				}}>🔐 Manage access</button>
-				<button id="settingsButton" on:click={() => {
-					settingsOpen = !settingsOpen;
-					documentationBranches = branches
-				}}>⚙️ {#if !settingsOpen}Open{:else}Close{/if} settings</button>
+				<button id="settingsButton" on:click={() => {toggleSettings()}}>⚙️ {#if !settingsOpen}Open{:else}Close{/if} settings</button>
 				<button id="settingsButton" on:click={() => {
 					reposFullyScanned = false;
 					repositories = {};
@@ -318,18 +370,11 @@
 					</div>
 					{#if Object.keys(repositories).length == 0}
 						{#if reposFullyScanned}
-							<p>Unable to find projects containing an index.html.</p>
-							<br />
-							<button
-								id="retry"
-								on:click={async () => {
-									hideSignin = true;
-									fullySignout()
-									await signinWithGithub();
-									reposFullyScanned = false;
-								}}>
-								Retry
-							</button>
+							{#if projectLocations.size > 0}
+								<p>Unable to find projects containing an index.html. Try refreshing by pressing "Reload" or updating your project locations in the settings menu</p>
+							{:else if (reposFullyScanned)}
+							 	<p>No project locations where specified, you can add these in the settings menu</p>
+							{/if}
 						{/if}
 					{/if}
 				</div>
@@ -351,6 +396,23 @@
 						<div id="branch-name">
 							<input bind:value={branchInput} type="text" placeholder="Branch name">
 							<input type="submit" value="Add branch">
+						</div>
+					</form>
+					<br>
+					<h2>Project locations</h2>
+					<p>Locations that the application will search for documentation</p>
+					{#each projectLocations as location, i}
+						<div id="branch">
+							<div id="branch-name">
+								<p>{location}</p>
+								<button on:click={() => {deleteLocation(i)}}>Delete</button>
+							</div>
+						</div>
+					{/each}
+					<form on:submit={addLocation} id="branch">
+						<div id="branch-name">
+							<input bind:value={locationInput} type="text" placeholder="Project location">
+							<input type="submit" value="Add location">
 						</div>
 					</form>
 				</div>
@@ -433,6 +495,14 @@
 		&:hover {
 			background-color: #333;
 		}
+	}
+
+	.warn {
+		background-color: rgb(255, 81, 0);
+		border-radius: 1rem;
+		padding: .5rem;
+		color: #fff;
+		width: fit-content;
 	}
 
 	#menu {
@@ -565,18 +635,6 @@
 					}
 				}
 			}
-		}
-
-
-		#retry {
-			background-color: #000;
-			color: #fff;
-			border: none;
-			border-radius: 5px;
-			padding: 10px;
-			cursor: pointer;
-			font-size: 1rem;
-			font-weight: 500;
 		}
 
 		p {
